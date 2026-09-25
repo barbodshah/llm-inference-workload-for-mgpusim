@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  llama-workload:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+          cache: true
+
+      - name: Build workload
+        run: go build ./samples/llama
+
+      - name: Run workload and simulator tests
+        run: go test ./benchmarks/llama ./emu ./insts ./driver ./kernels ./timing/cu
+
+      - name: Vet workload packages
+        run: go vet ./benchmarks/llama ./samples/llama
+

@@ -1,0 +1,16 @@
+This benchmark adapts the FP32 inference algorithm and HIP kernels from:
+https://github.com/Uzair-90/llama-inference-hip
+Local source: llama-inference-hip-main (unversioned source snapshot).
+That project carries the GNU General Public License version 3, reproduced in LICENSE.
+It credits Andrej Karpathy's llama2.c: https://github.com/karpathy/llama2.c.
+
+The adapted benchmark files in this directory and samples/llama are distributed
+under GPL-3.0-only. The surrounding MGPUSim source retains its existing license.
+No model weights or tokenizer data are bundled.
+
+Changes: Go checkpoint loader and host orchestration; OpenCL kernel adaptation;
+static local scratch arrays; barrier before reusing max-reduction scratch;
+CPU verification, deterministic synthetic fixture, and benchmark runner.
+
+The embedded kernel binary links AMD ROCm device libraries 5.0.0.
+Their notices and redistribution terms are reproduced in ROCM-DEVICE-LIBS-LICENSE.
