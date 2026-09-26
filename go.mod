@@ -1,5 +1,7 @@
 module github.com/sarchlab/mgpusim/v3
 
+go 1.22
+
 require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.16.0
@@ -43,5 +45,3 @@ require (
 // replace github.com/syifan/goseth => ../goseth
 
 // replace github.com/sarchlab/akita/v3 => ../akita
-
-go 1.22
