@@ -1,0 +1,2 @@
+go version go1.27.1 windows/amd64
+9fec2aa06001b21ddd6b83089189667150699baa

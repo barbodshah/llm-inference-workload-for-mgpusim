@@ -1,0 +1,3 @@
+phase,cp_kernel_us,mean_simd_pipeline_busy_fraction,wave_simd_instructions,dram_reads_including_setup,dram_writes_including_setup
+prefill,144.137,0.16950540111144258,1576347.0,3121.0,5171.0
+decode,141.287,0.11746303623121729,967338.0,33328.0,33842.0

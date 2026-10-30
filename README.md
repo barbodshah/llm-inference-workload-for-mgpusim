@@ -15,6 +15,12 @@ MGPUSim fork without rewriting internal imports.
 
 ## What is included
 
+An attention research extension is available separately from full-model Llama
+inference: [scope, concurrency audit, and validation](docs/research/pod-attention/RESEARCH.md)
+and [standalone benchmark commands](benchmarks/attention/README.md). It adds
+chunked prefill and batched decode microbenchmarks; it does not add batching to
+the Llama inference workload or implement the proposed hardware scheduler.
+
 - Legacy `llama2.c` FP32 checkpoint loading.
 - Token embedding, RMSNorm, Q/K/V projections, RoPE, grouped-query attention,
   persistent KV caches, SwiGLU, residual connections, and vocabulary logits.

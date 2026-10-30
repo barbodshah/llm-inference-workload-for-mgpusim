@@ -1,0 +1,208 @@
+error acquiring upload token: creating token file: open C:\Users\Admin\AppData\Roaming\go\telemetry\local\upload.token: Access is denied.
+=== RUN   TestKernelABI
+    benchmark_test.go:16: attention_decode: kernarg=60 SGPR=44 VGPR=48 LDS=4392 scratch=0
+    benchmark_test.go:16: concurrency_probe: kernarg=16 SGPR=10 VGPR=4 LDS=0 scratch=0
+    benchmark_test.go:16: attention_prefill: kernarg=60 SGPR=42 VGPR=49 LDS=5280 scratch=0
+--- PASS: TestKernelABI (0.00s)
+=== RUN   TestAttentionGPU
+=== RUN   TestAttentionGPU/A
+attention: phase= mode=serial heads=2 kv_heads=2 dim=1 chunk=1 prefill_context=1 decode_contexts=[1 9] verification=true
+attention: CPU reference verification passed
+=== RUN   TestAttentionGPU/B
+attention: phase= mode=concurrent heads=4 kv_heads=2 dim=7 chunk=5 prefill_context=17 decode_contexts=[17 1 9] verification=true
+attention: CPU reference verification passed
+=== RUN   TestAttentionGPU/C
+attention: phase= mode=serial heads=4 kv_heads=1 dim=32 chunk=8 prefill_context=33 decode_contexts=[7 33] verification=true
+attention: CPU reference verification passed
+=== RUN   TestAttentionGPU/D
+attention: phase= mode=concurrent heads=2 kv_heads=1 dim=64 chunk=3 prefill_context=257 decode_contexts=[257 65] verification=true
+attention: CPU reference verification passed
+=== RUN   TestAttentionGPU/prefill
+attention: phase=prefill mode=serial heads=4 kv_heads=2 dim=8 chunk=4 prefill_context=16 decode_contexts=[17 9 13] verification=true
+attention: CPU reference verification passed
+=== RUN   TestAttentionGPU/decode
+attention: phase=decode mode=serial heads=4 kv_heads=2 dim=8 chunk=4 prefill_context=16 decode_contexts=[17 9 13] verification=true
+attention: CPU reference verification passed
+--- PASS: TestAttentionGPU (0.85s)
+    --- PASS: TestAttentionGPU/A (0.06s)
+    --- PASS: TestAttentionGPU/B (0.14s)
+    --- PASS: TestAttentionGPU/C (0.17s)
+    --- PASS: TestAttentionGPU/D (0.39s)
+    --- PASS: TestAttentionGPU/prefill (0.04s)
+    --- PASS: TestAttentionGPU/decode (0.05s)
+=== RUN   TestOnlineSoftmaxLargeScores
+--- PASS: TestOnlineSoftmaxLargeScores (0.04s)
+=== RUN   TestDetailedAttention
+attention: phase=both mode=concurrent heads=4 kv_heads=2 dim=8 chunk=4 prefill_context=16 decode_contexts=[17 9 13] verification=true
+attention: CPU reference verification passed
+    benchmark_test.go:109: attention workgroups=16 mixed CUs=4 (no overlap requirement for tiny attention)
+--- PASS: TestDetailedAttention (0.43s)
+=== RUN   TestConcurrencyAudit
+=== RUN   TestConcurrencyAudit/same-queue
+    benchmark_test.go:119: launches=4 completed=16 mixed CUs=0
+=== RUN   TestConcurrencyAudit/separate-queues
+    benchmark_test.go:119: launches=4 completed=16 mixed CUs=8
+--- PASS: TestConcurrencyAudit (0.91s)
+    --- PASS: TestConcurrencyAudit/same-queue (0.49s)
+    --- PASS: TestConcurrencyAudit/separate-queues (0.43s)
+=== RUN   TestConfigRejectsInvalidInputs
+--- PASS: TestConfigRejectsInvalidInputs (0.00s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/benchmarks/attention	3.027s
+=== RUN   TestFunctionalCompletionRouting
+--- PASS: TestFunctionalCompletionRouting (0.00s)
+=== RUN   TestFunctionalCompletionRetry
+--- PASS: TestFunctionalCompletionRetry (0.00s)
+=== RUN   TestEmulator
+Running Suite: GCN3 Emulator - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\emu
+=====================================================================================================
+Random Seed: [1m1793399249[0m
+
+Will run [1m269[0m of [1m269[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 269 of 269 Specs in 0.019 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m269 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestEmulator (0.02s)
+=== RUN   TestVOP3OrderedFloatComparisons
+--- PASS: TestVOP3OrderedFloatComparisons (0.00s)
+=== RUN   TestUnsignedScalarBitExtract
+--- PASS: TestUnsignedScalarBitExtract (0.00s)
+=== RUN   TestScalarSelect64
+--- PASS: TestScalarSelect64 (0.00s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/emu	0.124s
+=== RUN   TestGPUForward
+2026/10/31 01:57:30 Llama position=0 input=1 argmax=1
+2026/10/31 01:57:30 Llama position=1 input=2 argmax=2
+2026/10/31 01:57:30 Llama position=2 input=3 argmax=3
+2026/10/31 01:57:30 Llama verification passed
+2026/10/31 01:57:30 Llama position=0 input=1 argmax=1
+2026/10/31 01:57:30 Llama position=1 input=2 argmax=2
+2026/10/31 01:57:30 Llama position=2 input=3 argmax=3
+2026/10/31 01:57:30 Llama verification passed
+--- PASS: TestGPUForward (0.23s)
+=== RUN   TestGPUKernels
+--- PASS: TestGPUKernels (0.07s)
+=== RUN   TestGPUAttentionLongContext
+--- PASS: TestGPUAttentionLongContext (0.09s)
+=== RUN   TestCheckpointLayout
+--- PASS: TestCheckpointLayout (0.00s)
+=== RUN   TestRejectMalformedCheckpoint
+=== RUN   TestRejectMalformedCheckpoint/zero_dimension
+=== RUN   TestRejectMalformedCheckpoint/odd_head_size
+=== RUN   TestRejectMalformedCheckpoint/invalid_GQA
+=== RUN   TestRejectMalformedCheckpoint/overflow
+=== RUN   TestRejectMalformedCheckpoint/negative_vocabulary_overflow
+--- PASS: TestRejectMalformedCheckpoint (0.00s)
+    --- PASS: TestRejectMalformedCheckpoint/zero_dimension (0.00s)
+    --- PASS: TestRejectMalformedCheckpoint/odd_head_size (0.00s)
+    --- PASS: TestRejectMalformedCheckpoint/invalid_GQA (0.00s)
+    --- PASS: TestRejectMalformedCheckpoint/overflow (0.00s)
+    --- PASS: TestRejectMalformedCheckpoint/negative_vocabulary_overflow (0.00s)
+=== RUN   TestScalarMath
+--- PASS: TestScalarMath (0.00s)
+=== RUN   TestReferenceAnalyticResidual
+--- PASS: TestReferenceAnalyticResidual (0.00s)
+=== RUN   TestReferenceCachePersists
+--- PASS: TestReferenceCachePersists (0.00s)
+=== RUN   TestVerificationRejectsNonfinite
+--- PASS: TestVerificationRejectsNonfinite (0.00s)
+=== RUN   TestUpstreamReference
+    upstream_test.go:39: set MGPUSIM_LLAMA_REFERENCE to compiled validation/reference.c
+--- SKIP: TestUpstreamReference (0.00s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/benchmarks/llama	1.002s
+=== RUN   TestCp
+Running Suite: CP Suite - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\timing\cp
+======================================================================================================
+Random Seed: [1m1793399250[0m
+
+Will run [1m23[0m of [1m23[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 23 of 23 Specs in 0.005 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m23 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestCp (0.01s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/timing/cp	0.949s
+=== RUN   TestDispatching
+Running Suite: Dispatching Suite - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\timing\cp\internal\dispatching
+====================================================================================================================================
+Random Seed: [1m1793399250[0m
+
+Will run [1m24[0m of [1m24[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 24 of 24 Specs in 0.006 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m24 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestDispatching (0.01s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/timing/cp/internal/dispatching	0.906s
+=== RUN   TestResource
+Running Suite: Resource Suite - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\timing\cp\internal\resource
+==============================================================================================================================
+Random Seed: [1m1793399250[0m
+
+Will run [1m14[0m of [1m14[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 14 of 14 Specs in 0.001 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m14 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestResource (0.00s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/timing/cp/internal/resource	0.780s
+=== RUN   TestSimulator
+Running Suite: GCN3 Timing Simulator - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\timing\cu
+===================================================================================================================
+Random Seed: [1m1793399250[0m
+
+Will run [1m112[0m of [1m112[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 112 of 112 Specs in 0.013 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m112 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestSimulator (0.01s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/timing/cu	0.902s
+=== RUN   TestDriver
+Running Suite: GCN3 GPU Driver - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\driver
+==========================================================================================================
+Random Seed: [1m1793399249[0m
+
+Will run [1m25[0m of [1m25[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 25 of 25 Specs in 0.280 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m25 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestDriver (0.28s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/driver	0.391s
+=== RUN   TestEmulator
+Running Suite: Kernels - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\kernels
+===================================================================================================
+Random Seed: [1m1793399250[0m
+
+Will run [1m4[0m of [1m4[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 4 of 4 Specs in 0.001 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m4 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestEmulator (0.00s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/kernels	0.768s
+=== RUN   TestDisassembler
+Running Suite: GCN3 Disassembler - D:\Barbod\Hardware Lab\Projects\llm-inference-workload-for-mgpusim\insts
+===========================================================================================================
+Random Seed: [1m1793399250[0m
+
+Will run [1m28[0m of [1m28[0m specs
+[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m[38;5;10m+[0m
+
+[38;5;10m[1mRan 28 of 28 Specs in 0.007 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m28 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestDisassembler (0.01s)
+=== RUN   TestDecodeScalarSelect64
+--- PASS: TestDecodeScalarSelect64 (0.00s)
+PASS
+ok  	github.com/sarchlab/mgpusim/v3/insts	0.793s
