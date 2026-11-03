@@ -7,6 +7,8 @@ import (
 	"log"
 	"math"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/sarchlab/akita/v3/mem/mem"
 	"github.com/sarchlab/akita/v3/sim"
@@ -85,12 +87,11 @@ type edge struct {
 	delta  int
 }
 
-func mixedSeconds(records []attention.Residence) float64 {
+func residencySeconds(records []attention.Residence) (active, mixed float64) {
 	byCU := make(map[string][]edge)
 	for _, r := range records {
 		byCU[r.CU] = append(byCU[r.CU], edge{r.Start, r.Kernel, 1}, edge{r.End, r.Kernel, -1})
 	}
-	var total float64
 	// Sum in a deterministic order.
 	names := make([]string, 0, len(byCU))
 	for name := range byCU {
@@ -103,8 +104,11 @@ func mixedSeconds(records []attention.Residence) float64 {
 		resident := make(map[uint64]int)
 		last := events[0].time
 		for _, e := range events {
+			if len(resident) > 0 {
+				active += e.time - last
+			}
 			if len(resident) > 1 {
-				total += e.time - last
+				mixed += e.time - last
 			}
 			resident[e.kernel] += e.delta
 			if resident[e.kernel] == 0 {
@@ -113,7 +117,7 @@ func mixedSeconds(records []attention.Residence) float64 {
 			last = e.time
 		}
 	}
-	return total
+	return active, mixed
 }
 
 func main() {
@@ -124,6 +128,7 @@ func main() {
 	flag.IntVar(&config.PrefillLength, "prefill-context", 96, "prefill KV tokens")
 	batch := flag.Int("batch", 16, "number of decode requests")
 	context := flag.Int("decode-context", 64, "KV tokens per decode request")
+	contexts := flag.String("decode-contexts", "", "comma-separated per-request KV lengths; overrides batch and decode-context")
 	lanes := flag.Int("simd-lanes", 16, "modeled SIMD FP32 lanes per cycle")
 	column := flag.Int("column-cycles", 1, "minimum DRAM column command spacing")
 	flag.BoolVar(&config.CompactDecode, "compact-decode", false, "use compact dimension-8 decode tiles")
@@ -133,13 +138,35 @@ func main() {
 	flag.IntVar(&config.Dim, "head-dim", 8, "head dimension")
 	prefillCUs := flag.Int("prefill-cus", 0, "reserve this many CUs for prefill and the remainder for decode; zero shares all CUs")
 	flag.Parse()
-	if *batch < 1 || *batch > 128 || *lanes < 1 || *lanes > 64 || 64%*lanes != 0 || *column < 1 {
-		log.Fatal("invalid batch, SIMD width or DRAM spacing")
+	if *lanes < 1 || *lanes > 64 || 64%*lanes != 0 || *column < 1 {
+		log.Fatal("invalid SIMD width or DRAM spacing")
 	}
 
-	config.DecodeLengths = make([]int, *batch)
-	for i := range config.DecodeLengths {
-		config.DecodeLengths[i] = *context
+	if *contexts != "" {
+		config.DecodeLengths = nil
+		for _, value := range strings.Split(*contexts, ",") {
+			length, err := strconv.Atoi(strings.TrimSpace(value))
+			if err != nil {
+				log.Fatal(err)
+			}
+			config.DecodeLengths = append(config.DecodeLengths, length)
+		}
+		*batch = len(config.DecodeLengths)
+		if *batch > 128 {
+			log.Fatal("decode-contexts supports at most 128 requests")
+		}
+	} else {
+		if *batch < 1 || *batch > 128 {
+			log.Fatal("batch must be 1..128")
+		}
+		config.DecodeLengths = make([]int, *batch)
+		for i := range config.DecodeLengths {
+			config.DecodeLengths[i] = *context
+		}
+	}
+	totalContext := 0
+	for _, length := range config.DecodeLengths {
+		totalContext += length
 	}
 	if err := config.Validate(); err != nil {
 		log.Fatal(err)
@@ -233,6 +260,7 @@ func main() {
 	for key := range shares {
 		shares[key] /= float64(count)
 	}
+	activeCUSeconds, mixedCUSeconds := residencySeconds(residency.Completed)
 	result := map[string]any{
 		"prefill_cus":                *prefillCUs,
 		"head_dim":                   config.Dim,
@@ -246,16 +274,20 @@ func main() {
 		"chunk":                      config.Chunk,
 		"prefill_context":            config.PrefillLength,
 		"batch":                      *batch,
-		"decode_context":             *context,
-		"decode_kv_bytes":            *batch * *context * config.KVHeads * config.Dim * 8,
+		"decode_contexts":            config.DecodeLengths,
+		"decode_kv_bytes":            totalContext * config.KVHeads * config.Dim * 8,
 		"simd_lanes":                 *lanes,
 		"column_cycles":              *column,
 		"makespan_us":                span * 1e6,
 		"dram_read_request_bytes":    m.readBytes, "dram_write_request_bytes": m.writeBytes,
 		"simd_busy_fraction":  busy / (float64(len(pipelines)) * span),
+		"active_cu_fraction":  activeCUSeconds / (span * float64(len(gpu.CUs))),
 		"mixed_cus":           residency.MixedCUCount(),
-		"mixed_cu_us":         mixedSeconds(residency.Completed) * 1e6,
+		"mixed_cu_us":         mixedCUSeconds * 1e6,
 		"cpi_activity_shares": shares,
+	}
+	if *contexts == "" {
+		result["decode_context"] = *context
 	}
 	for _, run := range m.launches {
 		var count int
