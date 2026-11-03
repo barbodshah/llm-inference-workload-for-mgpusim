@@ -20,6 +20,7 @@ import (
 
 // R9NanoPlatformBuilder can build a platform that equips R9Nano GPU.
 type R9NanoPlatformBuilder struct {
+	dramColumnCycles                   int
 	useParallelEngine                  bool
 	debugISA                           bool
 	traceVis                           bool
@@ -345,6 +346,15 @@ func (b R9NanoPlatformBuilder) createMMU(
 	return mmuComponent, pageTable
 }
 
+// WithDRAMColumnCycles changes the minimum spacing between column commands.
+func (b R9NanoPlatformBuilder) WithDRAMColumnCycles(cycles int) R9NanoPlatformBuilder {
+	if cycles < 1 {
+		panic("DRAM column spacing must be positive")
+	}
+	b.dramColumnCycles = cycles
+	return b
+}
+
 func (b *R9NanoPlatformBuilder) createGPUBuilder(
 	engine sim.Engine,
 	gpuDriver *driver.Driver,
@@ -359,6 +369,8 @@ func (b *R9NanoPlatformBuilder) createGPUBuilder(
 		WithLog2MemoryBankInterleavingSize(7).
 		WithLog2PageSize(b.log2PageSize).
 		WithGlobalStorage(b.globalStorage)
+
+	gpuBuilder.dramColumnCycles = b.dramColumnCycles
 
 	if b.monitor != nil {
 		gpuBuilder = gpuBuilder.WithMonitor(b.monitor)

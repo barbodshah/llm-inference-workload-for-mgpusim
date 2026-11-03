@@ -18,6 +18,8 @@ import (
 // requests from the driver and dispatch the requests to other parts of the
 // GPU.
 type CommandProcessor struct {
+	// RestrictLaunchCU optionally restricts a launch to selected resource-pool indices.
+	RestrictLaunchCU func(*protocol.LaunchKernelReq, int) bool
 	*sim.TickingComponent
 
 	Dispatchers        []dispatching.Dispatcher
@@ -298,6 +300,9 @@ func (p *CommandProcessor) processLaunchKernelReq(
 		return false
 	}
 
+	if restrict := p.RestrictLaunchCU; restrict != nil {
+		req.CUFilter = func(index int) bool { return restrict(req, index) }
+	}
 	d.StartDispatching(req)
 	p.ToDriver.Retrieve(now)
 

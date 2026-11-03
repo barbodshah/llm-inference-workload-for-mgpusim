@@ -10,6 +10,7 @@ type WGFilterFunc func(
 
 // KernelLaunchInfo includes the necessary information to launch a kernel.
 type KernelLaunchInfo struct {
+	CUFilter   func(int) bool
 	CodeObject *insts.HsaCo
 	Packet     *HsaKernelDispatchPacket
 	PacketAddr uint64

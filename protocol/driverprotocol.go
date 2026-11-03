@@ -38,6 +38,7 @@ type LaunchKernelReq struct {
 	PacketAddress uint64
 	HsaCo         *insts.HsaCo
 	WGFilter      kernels.WGFilterFunc
+	CUFilter      func(int) bool // Optional placement restriction for timing experiments.
 }
 
 // Meta returns the meta data associated with the message.

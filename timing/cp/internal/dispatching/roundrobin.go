@@ -14,6 +14,7 @@ type roundRobinAlgorithm struct {
 
 	currWG           *kernels.WorkGroup
 	nextCU           int
+	cuFilter         func(int) bool
 	numDispatchedWGs int
 }
 
@@ -25,6 +26,7 @@ func (a *roundRobinAlgorithm) RegisterCU(cu resource.DispatchableCU) {
 // StartNewKernel lets the algorithms to start dispatching a new kernel.
 func (a *roundRobinAlgorithm) StartNewKernel(info kernels.KernelLaunchInfo) {
 	a.numDispatchedWGs = 0
+	a.cuFilter = info.CUFilter
 	a.gridBuilder.SetKernel(info)
 }
 
@@ -47,6 +49,9 @@ func (a *roundRobinAlgorithm) Next() (location dispatchLocation) {
 
 	for i := 0; i < a.cuPool.NumCU(); i++ {
 		cuID := (a.nextCU + i) % a.cuPool.NumCU()
+		if a.cuFilter != nil && !a.cuFilter(cuID) {
+			continue
+		}
 		cu := a.cuPool.GetCU(cuID)
 
 		locations, ok := cu.ReserveResourceForWG(a.currWG)

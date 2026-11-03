@@ -81,6 +81,23 @@ var _ = Describe("Round Robin Algorithm", func() {
 		Expect(alg.numDispatchedWGs).To(Equal(1))
 	})
 
+	It("skips excluded CUs and clears the restriction for the next launch", func() {
+		gridBuilder.EXPECT().SetKernel(gomock.Any()).Times(2)
+		alg.StartNewKernel(kernels.KernelLaunchInfo{CUFilter: func(index int) bool {
+			return index == 1
+		}})
+		wg := kernels.NewWorkGroup()
+		gridBuilder.EXPECT().NextWG().Return(wg).Times(2)
+		cus[1].EXPECT().ReserveResourceForWG(wg).Return(nil, true)
+		Expect(alg.Next().cuID).To(Equal(1))
+
+		alg.StartNewKernel(kernels.KernelLaunchInfo{})
+		cus[0].EXPECT().ReserveResourceForWG(wg).Return(nil, true)
+		location := alg.Next()
+		Expect(location.valid).To(BeTrue())
+		Expect(location.cuID).To(Equal(0))
+	})
+
 	It("should return invalid location is dispatch is not possible", func() {
 		wg := kernels.NewWorkGroup()
 

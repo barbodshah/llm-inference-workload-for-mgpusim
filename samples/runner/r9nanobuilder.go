@@ -25,6 +25,7 @@ import (
 
 // R9NanoGPUBuilder can build R9 Nano GPUs.
 type R9NanoGPUBuilder struct {
+	dramColumnCycles               int
 	engine                         sim.Engine
 	freq                           sim.Freq
 	memAddrOffset                  uint64
@@ -583,6 +584,10 @@ func (b *R9NanoGPUBuilder) createDramControllerBuilder() dram.Builder {
 	dramRankSize := dramBankSize * dramDevicePerRank * dramBank
 	dramRank := int(memBankSize * 8 / uint64(dramRankSize))
 
+	columnCycles := b.dramColumnCycles
+	if columnCycles == 0 {
+		columnCycles = 1
+	}
 	memCtrlBuilder := dram.MakeBuilder().
 		WithEngine(b.engine).
 		WithFreq(500 * sim.MHz).
@@ -610,8 +615,8 @@ func (b *R9NanoGPUBuilder) createDramControllerBuilder() dram.Builder {
 		WithTWTRS(3).
 		WithTWTRL(4).
 		WithTWR(8).
-		WithTCCDS(1).
-		WithTCCDL(1).
+		WithTCCDS(columnCycles).
+		WithTCCDL(columnCycles).
 		WithTRTRS(0).
 		WithTRTP(3).
 		WithTPPD(2)

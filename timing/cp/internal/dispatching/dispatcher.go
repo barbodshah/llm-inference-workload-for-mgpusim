@@ -69,6 +69,7 @@ func (d *DispatcherImpl) StartDispatching(req *protocol.LaunchKernelReq) {
 		Packet:     req.Packet,
 		PacketAddr: req.PacketAddress,
 		WGFilter:   req.WGFilter,
+		CUFilter:   req.CUFilter,
 	})
 	d.dispatching = req
 
