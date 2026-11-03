@@ -244,6 +244,12 @@ func (b *Benchmark) SetUnifiedMemory()   { b.unified = true }
 func (b *Benchmark) EnableVerification() { b.verify = true }
 
 func (b *Benchmark) initDataset(d *dataset) {
+	b.allocateDataset(d, func(dst driver.Ptr, src interface{}) {
+		b.Driver.MemCopyH2D(b.context, dst, src)
+	})
+}
+
+func (b *Benchmark) allocateDataset(d *dataset, upload func(driver.Ptr, interface{})) {
 	alloc := func(n int) driver.Ptr {
 		var p driver.Ptr
 		if b.unified {
@@ -255,15 +261,15 @@ func (b *Benchmark) initDataset(d *dataset) {
 		return p
 	}
 	d.args = attentionArgs{Out: alloc(len(d.out)), Q: alloc(len(d.q)), K: alloc(len(d.k)), V: alloc(len(d.v)), Lengths: alloc(len(d.lengths)), Queries: int32(d.queries), Heads: int32(d.heads), KVHeads: int32(d.kvHeads), Dim: int32(d.dim), Stride: int32(d.stride)}
-	b.Driver.MemCopyH2D(b.context, d.args.Q, d.q)
-	b.Driver.MemCopyH2D(b.context, d.args.K, d.k)
-	b.Driver.MemCopyH2D(b.context, d.args.V, d.v)
-	b.Driver.MemCopyH2D(b.context, d.args.Lengths, d.lengths)
+	upload(d.args.Q, d.q)
+	upload(d.args.K, d.k)
+	upload(d.args.V, d.v)
+	upload(d.args.Lengths, d.lengths)
 	poison := make([]float32, len(d.out))
 	for i := range poison {
 		poison[i] = float32(math.NaN())
 	}
-	b.Driver.MemCopyH2D(b.context, d.args.Out, poison)
+	upload(d.args.Out, poison)
 }
 
 func (b *Benchmark) Run() {

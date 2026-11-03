@@ -85,3 +85,31 @@ Each round starts a fresh timing simulation and ends before the next round.
 The reported throughput, first decode latency, and inter-decode latency are
 attention-only measurements. They exclude arrival queueing, persistent cache
 state across rounds, and full-model execution. Decisions apply between rounds.
+
+### Persistent replay with explicit arrivals
+
+Use the same executable to compare two scheduling policies in one continuous
+timing simulation per policy and seed.
+
+```powershell
+python docs/research/pod-attention/run_trace_study.py ./attention-study.exe completion.jsonl --persistent --seed 202 --seed 303 --seed 404 --arrival-us 10
+```
+
+Both policies use shared CUs, one prefill chunk in flight, and one decode
+batch in flight. A decode batch contains all eligible requests at dispatch.
+The barrier policy waits for both launches in a dispatch round to finish.
+The completion policy immediately reconsiders work when either launch
+finishes. Every policy receives the same prompts at the same simulated times.
+
+For a custom trace, pass `-replay-trace trace.json -replay-policy completion`
+to the executable. The file contains a JSON array of objects with
+`arrival_us`, `prompt`, and `output`. Use `-replay-trace -` to read from stdin.
+The JSONL driver records the exact trace, per-launch timestamps and last CTA
+residency, throughput, p95 first decode and inter-decode latency, and p95 prefill
+completion latency from arrival.
+
+The simulation keeps request progress and GPU state across launches. Each
+launch uses separate synthetic Q/K/V allocations and magic memory copies.
+The measurements cover attention scheduling with these synthetic inputs.
+They exclude full-model execution, host transfer latency, and persistent
+per-request KV buffer reuse.

@@ -139,3 +139,53 @@ func TestConfigRejectsInvalidInputs(t *testing.T) {
 		t.Fatal("accepted NaN")
 	}
 }
+
+func TestReplayDecodeAdvancesDuringPrefill(t *testing.T) {
+	requests := []ReplayRequest{
+		{Prompt: 8, Output: 3},
+		{ArrivalUS: 3, Prompt: 32, Output: 2},
+	}
+	for _, policy := range []string{"barrier", "completion"} {
+		t.Run(policy, func(t *testing.T) {
+			p := runner.MakeR9NanoBuilder().WithNumGPU(1).WithMagicMemoryCopy().Build()
+			defer p.Engine.Finished()
+			residency := NewResidencyTracer(p.Engine)
+			for _, unit := range p.GPUs[0].CUs {
+				tracing.CollectTrace(unit, residency)
+			}
+			b := NewBenchmark(p.Driver)
+			result, err := b.RunReplay(p.Engine, p.GPUs[0].CommandProcessor, residency, requests, 32, policy)
+			if err != nil {
+				t.Fatal(err)
+			}
+			contexts := [2]int{9, 33}
+			var longPrefill *ReplayLaunch
+			for _, launch := range result.Launches {
+				if launch.Phase == "prefill" && launch.Requests[0] == 1 {
+					longPrefill = launch
+				}
+			}
+			if longPrefill == nil {
+				t.Fatal("missing second prefill")
+			}
+			advanced := false
+			for _, launch := range result.Launches {
+				if launch.Phase != "decode" {
+					continue
+				}
+				for j, index := range launch.Requests {
+					if launch.Contexts[j] != contexts[index] || launch.IssueUS < launch.ReadyUS[j] {
+						t.Fatalf("invalid decode launch %+v", launch)
+					}
+					if index == 0 && contexts[index] == 10 && launch.AdmissionUS < longPrefill.DoneUS {
+						advanced = true
+					}
+					contexts[index]++
+				}
+			}
+			if result.Tokens != 5 || contexts != [2]int{12, 35} || advanced != (policy == "completion") {
+				t.Fatalf("tokens=%d next contexts=%v advanced=%v", result.Tokens, contexts, advanced)
+			}
+		})
+	}
+}

@@ -114,6 +114,24 @@ def replay(binary, requests, chunk_size, policy, cache, emit):
 def percentile95(values):
     return sorted(values)[math.ceil(0.95 * len(values)) - 1] if values else None
 
+
+def replay_persistent(binary, requests, chunk, arrival_us, emit):
+    trace = [{"arrival_us": index * arrival_us, **request}
+             for index, request in enumerate(requests)]
+    emit({"kind": "persistent_trace", "chunk_size": chunk, "requests": trace})
+    for policy in ("barrier", "completion"):
+        command = [binary, "-replay-trace", "-", "-replay-policy", policy,
+                   "-chunk", str(chunk)]
+        run = subprocess.run(command, input=json.dumps(trace), capture_output=True,
+                             text=True, timeout=900)
+        if run.returncode:
+            raise RuntimeError(f"{command}: {run.stdout}\n{run.stderr}")
+        result = json.loads(run.stdout)
+        for launch in result.pop("launches"):
+            emit({"kind": "launch", "policy": policy, **launch})
+        yield {"kind": "summary", **result}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("binary", type=Path)
@@ -125,7 +143,13 @@ def main():
     parser.add_argument("--short", type=int, nargs=2, default=(8, 32))
     parser.add_argument("--long", type=int, nargs=2, default=(64, 128))
     parser.add_argument("--outputs", type=int, nargs=2, default=(4, 12))
+    parser.add_argument("--persistent", action="store_true",
+                        help="compare barrier and completion policies in persistent replay")
+    parser.add_argument("--arrival-us", type=float, default=10,
+                        help="time between prompt arrivals in persistent replay")
     args = parser.parse_args()
+    if not math.isfinite(args.arrival_us) or args.arrival_us < 0:
+        parser.error("arrival interval must be finite and nonnegative")
     if not 1 <= args.requests <= 128 or args.chunk < 1 or not 0 <= args.long_fraction <= 1:
         parser.error("require 1..128 requests, positive chunk and long fraction in [0, 1]")
     if any(not 1 <= low <= high for low, high in (args.short, args.long, args.outputs)):
@@ -142,6 +166,11 @@ def main():
 
             requests = generate(seed, args.requests, args.long_fraction,
                                 args.short, args.long, args.outputs)
+            if args.persistent:
+                for summary in replay_persistent(binary, requests, args.chunk, args.arrival_us, emit):
+                    emit(summary)
+                    print(json.dumps({"seed": seed, **summary}), flush=True)
+                continue
             emit({"kind": "trace", "requests": requests, "chunk_size": args.chunk,
                   "distribution": {"long_fraction": args.long_fraction, "short": args.short,
                                    "long": args.long, "outputs": args.outputs}})

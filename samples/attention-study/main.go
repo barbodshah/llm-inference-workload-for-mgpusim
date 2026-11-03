@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"math"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -137,7 +139,13 @@ func main() {
 	flag.IntVar(&config.KVHeads, "kv-heads", 8, "KV heads")
 	flag.IntVar(&config.Dim, "head-dim", 8, "head dimension")
 	prefillCUs := flag.Int("prefill-cus", 0, "reserve this many CUs for prefill and the remainder for decode; zero shares all CUs")
+	trace := flag.String("replay-trace", "", "JSON file with arrival_us, prompt and output, or - for stdin")
+	policy := flag.String("replay-policy", "barrier", "persistent replay policy: barrier or completion")
 	flag.Parse()
+	if *trace != "" {
+		runReplay(*trace, *policy, config.Chunk)
+		return
+	}
 	if *lanes < 1 || *lanes > 64 || 64%*lanes != 0 || *column < 1 {
 		log.Fatal("invalid SIMD width or DRAM spacing")
 	}
@@ -320,4 +328,36 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(string(data))
+}
+
+func runReplay(path, policy string, chunk int) {
+	var data []byte
+	var err error
+	if path == "-" {
+		data, err = io.ReadAll(os.Stdin)
+	} else {
+		data, err = os.ReadFile(path)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	var requests []attention.ReplayRequest
+	if err := json.Unmarshal(data, &requests); err != nil {
+		log.Fatal(err)
+	}
+	platform := runner.MakeR9NanoBuilder().WithNumGPU(1).WithMagicMemoryCopy().Build()
+	gpu := platform.GPUs[0]
+	residency := attention.NewResidencyTracer(platform.Engine)
+	for _, unit := range gpu.CUs {
+		tracing.CollectTrace(unit, residency)
+	}
+	benchmark := attention.NewBenchmark(platform.Driver)
+	result, err := benchmark.RunReplay(platform.Engine, gpu.CommandProcessor, residency, requests, chunk, policy)
+	if err != nil {
+		log.Fatal(err)
+	}
+	platform.Engine.Finished()
+	if err := json.NewEncoder(os.Stdout).Encode(result); err != nil {
+		log.Fatal(err)
+	}
 }
