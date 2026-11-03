@@ -20,6 +20,7 @@ var kernelBinary []byte
 // Config describes independent requests. Length includes the current query
 // tokens. Prefill queries occupy the last Chunk positions of its KV cache.
 type Config struct {
+	CompactDecode                             bool
 	Heads, KVHeads, Dim, Chunk, PrefillLength int
 	DecodeLengths                             []int
 	Mode                                      string
@@ -32,6 +33,9 @@ func DefaultConfig() Config {
 }
 
 func (c Config) Validate() error {
+	if c.CompactDecode && c.Dim != 8 {
+		return fmt.Errorf("compact decode requires head dimension 8")
+	}
 	if c.Heads < 1 || c.Heads > 4096 || c.KVHeads < 1 || c.Heads%c.KVHeads != 0 {
 		return fmt.Errorf("heads must be 1..4096 and divisible by positive KV heads")
 	}
@@ -103,7 +107,7 @@ func LoadKernels() (map[string]*insts.HsaCo, error) {
 		return nil, err
 	}
 	out := make(map[string]*insts.HsaCo)
-	for name, arg := range map[string]interface{}{"attention_prefill": attentionArgs{}, "attention_decode": attentionArgs{}, "concurrency_probe": probeArgs{}} {
+	for name, arg := range map[string]interface{}{"attention_prefill": attentionArgs{}, "attention_decode": attentionArgs{}, "attention_decode_compact": attentionArgs{}, "concurrency_probe": probeArgs{}} {
 		for _, s := range symbols {
 			if s.Name != name {
 				continue
@@ -302,6 +306,9 @@ func (b *Benchmark) Run() {
 		qt, name := 4, "attention_prefill"
 		if d == decode {
 			qt, name = 1, "attention_decode"
+			if c.CompactDecode {
+				name = "attention_decode_compact"
+			}
 		}
 		groups := len(d.lengths) * d.heads * ((d.queries + qt - 1) / qt)
 		launches[i] = prepareLaunch(b.Driver, b.context, programs[name], [3]uint32{uint32(groups * qt * 64), 1, 1}, [3]uint16{uint16(qt * 64), 1, 1}, &d.args)

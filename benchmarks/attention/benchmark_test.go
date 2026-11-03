@@ -23,6 +23,7 @@ func TestAttentionGPU(t *testing.T) {
 		{Heads: 4, KVHeads: 2, Dim: 7, Chunk: 5, PrefillLength: 17, DecodeLengths: []int{17, 1, 9}, Mode: "concurrent"},
 		{Heads: 4, KVHeads: 1, Dim: 32, Chunk: 8, PrefillLength: 33, DecodeLengths: []int{7, 33}, Mode: "serial"},
 		{Heads: 2, KVHeads: 1, Dim: 64, Chunk: 3, PrefillLength: 257, DecodeLengths: []int{257, 65}, Mode: "concurrent"},
+		{Heads: 4, KVHeads: 2, Dim: 8, Chunk: 5, PrefillLength: 17, DecodeLengths: []int{1, 9, 19}, Mode: "concurrent", CompactDecode: true},
 	}
 	for i, c := range cases {
 		t.Run(string(rune('A'+i)), func(t *testing.T) {

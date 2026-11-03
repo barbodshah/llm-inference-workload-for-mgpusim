@@ -2,14 +2,14 @@
 // Portable GCN3 research baseline: query tiles share an 8-token K/V tile.
 // FP32 online softmax; no global attention-score matrix. Not FlashAttention.
 #define KEY_TILE 8
-#define DIM_TILE 64
 
-#define ATTENTION(NAME, QT) \
+#define ATTENTION(NAME, QT, DIM_TILE) \
 __attribute__((reqd_work_group_size(QT * 64, 1, 1))) \
 __kernel void NAME(__global float *out, __global const float *q, \
     __global const float *keys, __global const float *values, \
     __global const int *lengths, int queries, int heads, int kv_heads, \
-    int dim, int stride) { \
+    int head_dim, int stride) { \
+    const int dim = DIM_TILE == 8 ? 8 : head_dim; \
     int lid = get_local_id(0), lane = lid % 64, row = lid / 64; \
     int tiles = (queries + QT - 1) / QT; \
     int group = get_group_id(0), tile = group % tiles; \
@@ -20,7 +20,7 @@ __kernel void NAME(__global float *out, __global const float *q, \
     __local volatile float tq[QT * DIM_TILE], tk[KEY_TILE * DIM_TILE]; \
     __local volatile float tv[KEY_TILE * DIM_TILE], scores[QT * KEY_TILE]; \
     __local volatile float alpha[QT], denom[QT]; \
-    tq[lid] = query < queries && lane < dim ? \
+    if (lane < DIM_TILE) tq[row * DIM_TILE + lane] = query < queries && lane < dim ? \
         q[((request * queries + query) * heads + head) * dim + lane] : 0.0f; \
     float acc = 0.0f, maximum = -INFINITY, total = 0.0f; \
     barrier(CLK_LOCAL_MEM_FENCE); \
@@ -54,16 +54,17 @@ __kernel void NAME(__global float *out, __global const float *q, \
             alpha[row] = a; denom[row] = total; \
         } \
         barrier(CLK_LOCAL_MEM_FENCE); \
-        acc *= alpha[row]; \
-        for (int j = 0; j < KEY_TILE; j++) acc += scores[row * KEY_TILE + j] * tv[j * DIM_TILE + lane]; \
+        if (lane < DIM_TILE) { acc *= alpha[row]; \
+        for (int j = 0; j < KEY_TILE; j++) acc += scores[row * KEY_TILE + j] * tv[j * DIM_TILE + lane]; } \
         barrier(CLK_LOCAL_MEM_FENCE); \
     } \
     if (query < queries && lane < dim) \
         out[((request * queries + query) * heads + head) * dim + lane] = acc * native_recip(denom[row]); \
 }
 
-ATTENTION(attention_prefill, 4)
-ATTENTION(attention_decode, 1)
+ATTENTION(attention_prefill, 4, 64)
+ATTENTION(attention_decode, 1, 64)
+ATTENTION(attention_decode_compact, 1, 8)
 
 // Two independent instances of this kernel exercise existing queue/dispatch
 // concurrency. Unsigned wraparound has an exact CPU reference.
