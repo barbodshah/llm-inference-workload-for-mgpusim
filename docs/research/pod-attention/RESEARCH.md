@@ -2,6 +2,9 @@
 
 ## Scope and hypotheses (step 1)
 
+The [follow-up bottleneck study](BOTTLENECK-STUDY.md) records the measured
+sensitivity, concurrency baselines, and decision on prototyping a scheduler.
+
 Research base: this repository's MGPUSim 3.0.2 fork, initially one GCN3 GPU,
 FP32 attention, independent requests, and non-preemptive workgroup admission.
 The default detailed platform has 64 CUs, four SIMDs per CU, and eight command
